@@ -1,0 +1,45 @@
+{
+  "rabbit_version": "3.7.8",
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "5pnn7N9inDs8rXJDoqVHkZ51n5VyMaFDvCvIbCwjOWTSwfQX",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [],
+  "global_parameters": [
+    {
+      "name": "cluster_name",
+      "value": "rabbit@my-rabbit"
+    }
+  ],
+  "policies": [],
+  "queues": [
+    {
+      "name": "message-queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [],
+  "bindings": []
+}
