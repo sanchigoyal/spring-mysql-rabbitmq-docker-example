@@ -11,10 +11,10 @@ VOLUME /tmp
 EXPOSE 8085
 
 # The application's jar file
-ARG JAR_FILE=./build/libs/spring-docker-compose-0.0.1-SNAPSHOT.jar
+ARG JAR_FILE=./build/libs/spring-mysql-rabbitmq-docker-example-0.0.1-SNAPSHOT.jar
 
 # Add the application's jar to the container
-ADD ${JAR_FILE} spring-docker-compose.jar
+ADD ${JAR_FILE} spring-mysql-rabbitmq-docker-example.jar
 
 # Run the jar file
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/spring-docker-compose.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/spring-mysql-rabbitmq-docker-example.jar"]
