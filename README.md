@@ -7,7 +7,7 @@ Later it demonstrates the use of docker-compose to integrate these containers.
  * docker-compose
 
 ## About Application
-It's a simple messaging application. 
+It is a simple messaging application. That -
  * Listens to a RabbitMQ queue
  * Reads the message when available
  * Stores it in the MySQL database
@@ -35,10 +35,37 @@ It's a simple messaging application.
 }
 ```
 ### Creating RabbitMQ Container with Static Configuration
+You can always create a RabbitMQ container using the official RabbitMQ docker images available on
+[docker hub](https://hub.docker.com/r/library/rabbitmq/). In this case I have used 
+rabbitmq:3-management. This adds RabbitMQ management console which is exposed on port 15672. In this
+example the console is used to drop message into the queue.
+
+However, for this example we also need a queue with name 'message-queue' pre-configured in the RabbitMQ
+server. Follow the steps listed on [Deploy RabbitMQ with Docker-static configuration](https://medium.com/@thomasdecaux/deploy-rabbitmq-with-docker-static-configuration-23ad39cdbf39)
+to have the queue created during RabbitMQ container setup.
 
 ### Creating MySQL Container with Static Configuration
+Similar to RabbitMQ, MySQL container can be created using the official MySQL docker image available
+on [docker hub](https://hub.docker.com/r/library/mysql/). You can install MySQL Workbench for viewing 
+data on MySQL server. 
+
+Also, for this example we need a table named 'message' pre-configured in MySQL database. In order
+to do that, we will create two scripts - 
+1. Create schema 
+2. Create table 'message' under our schema
+
+It is important to remember that, the execution of these scripts will happen in alphabetical order. 
+Once both the scripts are ready, we can add them to /docker-entrypoint-initdb.d under volumes 
+section of docker-compose.yml. By default all scripts under this path executes in alphabetical order
+during container configuration.  
 
 ### Creating Spring Boot Container
+In order to create a docker container for our spring boot application, we first need to have a 
+Dockerfile which can be used to build an image for the application. Later we can use this image in 
+docker-compose.yml to create containers.
+
+In the same docker-compose.yml, we can connect our application container with RabbitMQ and MySQL 
+container using environment variables. 
 
 ### Execution
 This is the easiest part. Go to the root of the project and run below commands.
