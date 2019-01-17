@@ -40,6 +40,17 @@ You can always create a RabbitMQ container using the official RabbitMQ docker im
 rabbitmq:3-management. This adds RabbitMQ management console which is exposed on port 15672. In this
 example the console is used to drop message into the queue.
 
+```
+rabbitmq-container:
+  image: rabbitmq:3-management
+  ports:
+    - 5672:5672
+    - 15672:15672
+  volumes:
+    - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    - ./rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+```
+
 However, for this example we also need a queue with name 'message-queue' pre-configured in the RabbitMQ
 server. Follow the steps listed on [Deploy RabbitMQ with Docker-static configuration](https://medium.com/@thomasdecaux/deploy-rabbitmq-with-docker-static-configuration-23ad39cdbf39)
 to have the queue created during RabbitMQ container setup.
@@ -54,6 +65,17 @@ to do that, we will create two scripts -
 1. Create schema 
 2. Create table 'message' under our schema
 
+```
+mysql-container:
+  image: mysql
+  ports:
+    - 3306:3306
+  environment:
+    - MYSQL_ROOT_PASSWORD=root
+  volumes:
+    - ./mysql:/docker-entrypoint-initdb.d:ro
+```
+
 It is important to remember that, the execution of these scripts will happen in alphabetical order. 
 Once both the scripts are ready, we can add them to /docker-entrypoint-initdb.d under volumes 
 section of docker-compose.yml. By default all scripts under this path executes in alphabetical order
@@ -61,11 +83,50 @@ during container configuration.
 
 ### Creating Spring Boot Container
 In order to create a docker container for our spring boot application, we first need to have a 
-Dockerfile which can be used to build an image for the application. Later we can use this image in 
-docker-compose.yml to create containers.
+Dockerfile which can be used to build an image for the application. 
 
-In the same docker-compose.yml, we can connect our application container with RabbitMQ and MySQL 
-container using environment variables. 
+```
+# Start with a base image containing Java runtime
+FROM openjdk:8-jdk-alpine
+
+# Add Maintainer Info
+LABEL maintainer="sanchi.goyal.sg@gmail.com"
+
+# Add a volume pointing to /tmp
+VOLUME /tmp
+
+# Make port 8085 available to the world outside this container
+EXPOSE 8085
+
+# The application's jar file
+ARG JAR_FILE=./build/libs/spring-mysql-rabbitmq-docker-example-0.0.1-SNAPSHOT.jar
+
+# Add the application's jar to the container
+ADD ${JAR_FILE} spring-mysql-rabbitmq-docker-example.jar
+
+# Run the jar file
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/spring-mysql-rabbitmq-docker-example.jar"]
+```
+
+Now that we have the setup available to create a Docker image, lets use it in docker-compose.yml to 
+create a container and assign RabbitMQ and MySQL as dependencies. 
+
+```
+app-container:
+  build:
+    context: ../../../../
+    dockerfile: ./src/main/resources/docker/Dockerfile
+  ports:
+    - 8085:8085
+  environment:
+    - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-container:3306/message?useSSL=false&allowPublicKeyRetrieval=true
+    - SPRING_DATASOURCE_USERNAME=root
+    - SPRING_DATASOURCE_PASSWORD=root
+    - SPRING_RABBITMQ_HOST=rabbitmq-container
+  depends_on:
+    - rabbitmq-container
+    - mysql-container
+```
 
 ### Execution
 This is the easiest part. Go to the root of the project and run below commands.
